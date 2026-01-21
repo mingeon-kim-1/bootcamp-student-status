@@ -30,15 +30,6 @@ async function main() {
     },
   })
 
-  // Create default branding
-  await prisma.branding.upsert({
-    where: { id: 'default' },
-    update: {},
-    create: {
-      id: 'default',
-    },
-  })
-
   console.log('Seed completed successfully!')
 }
 
