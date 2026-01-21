@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import BrandingDisplay from '@/components/BrandingDisplay'
 import PageHeader from '@/components/PageHeader'
@@ -18,6 +19,17 @@ export default async function HomePage({ params: { locale } }: { params: { local
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-4">
+        {/* Wrtn Logo */}
+        <div className="mb-8">
+          <Image 
+            src="/wrtn-logo.svg" 
+            alt="Wrtn Logo" 
+            width={200} 
+            height={50}
+            className="mx-auto"
+          />
+        </div>
+
         {/* Branding */}
         <BrandingDisplay 
           imagePath={branding?.loginImagePath} 
