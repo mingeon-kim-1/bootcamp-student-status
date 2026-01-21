@@ -272,10 +272,11 @@ export default function DisplayPage() {
     const totalWidth = getColPosition(data.config.seatsPerRow - 1) + cellSize
     const totalHeight = getRowPosition(0) + cellSize
 
-    // Render continuous vertical corridors
+    // Render continuous vertical corridors (centered between columns)
     const verticalCorridors = data.config.corridorAfterCols?.map(col => {
       if (col >= data.config.seatsPerRow - 1) return null
-      const xPos = getColPosition(col) + cellSize + gap / 2
+      // Position corridor in the center of the gap space: cellEnd + gap + corridorWidth/2
+      const xPos = getColPosition(col) + cellSize + gap + corridorWidth / 2
       return (
         <div
           key={`v-corridor-${col}`}
@@ -290,10 +291,11 @@ export default function DisplayPage() {
       )
     }) || []
 
-    // Render continuous horizontal corridors
+    // Render continuous horizontal corridors (centered between rows)
     const horizontalCorridors = data.config.corridorAfterRows?.map(row => {
       if (row <= 0) return null
-      const yPos = getRowPosition(row) - gap / 2
+      // Position corridor in the center of the gap space: rowEnd + gap + corridorWidth/2
+      const yPos = getRowPosition(row) - gap - corridorWidth / 2
       return (
         <div
           key={`h-corridor-${row}`}
