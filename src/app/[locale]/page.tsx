@@ -62,7 +62,7 @@ export default async function HomePage({ params: { locale } }: { params: { local
 
       {/* Footer */}
       <footer className="p-6 text-center text-gray-500 dark:text-slate-500 text-sm">
-        © 2024 Bootcamp Status Check
+        © 2026 Bootcamp Status Check
       </footer>
     </div>
   )
