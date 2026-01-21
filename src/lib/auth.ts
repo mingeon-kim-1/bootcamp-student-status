@@ -104,6 +104,10 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 12 * 60 * 60, // 12 hours in seconds
+  },
+  jwt: {
+    maxAge: 12 * 60 * 60, // 12 hours in seconds
   },
   secret: process.env.NEXTAUTH_SECRET || 'bootcamp-status-secret-key-change-in-production',
 }
