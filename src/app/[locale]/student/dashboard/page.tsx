@@ -52,12 +52,32 @@ export default function StudentDashboardPage({ params: { locale } }: { params: {
     }
   }, [session])
 
+  // Real-time announcement polling
+  useEffect(() => {
+    if (session?.user?.role === 'student') {
+      const fetchAnnouncement = async () => {
+        try {
+          const res = await fetch('/api/admin/announcement', { cache: 'no-store' })
+          if (res.ok) {
+            setAnnouncement(await res.json())
+          }
+        } catch (error) {
+          console.error('Error fetching announcement:', error)
+        }
+      }
+
+      // Poll every 3 seconds for real-time updates
+      const interval = setInterval(fetchAnnouncement, 3000)
+      return () => clearInterval(interval)
+    }
+  }, [session])
+
   const fetchData = async () => {
     try {
       const [statusRes, attendanceRes, announcementRes] = await Promise.all([
         fetch('/api/student/status'),
         fetch('/api/student/attendance'),
-        fetch('/api/admin/announcement'),
+        fetch('/api/admin/announcement', { cache: 'no-store' }),
       ])
       
       if (statusRes.ok) {
@@ -220,20 +240,24 @@ export default function StudentDashboardPage({ params: { locale } }: { params: {
                   </span>
                 </div>
 
-                {/* Announcement */}
-                {announcement?.isActive && announcement?.content && (
-                  <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl">
+                {/* Announcement with smooth transition */}
+                <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                  announcement?.isActive && announcement?.content 
+                    ? 'max-h-96 opacity-100 mb-6' 
+                    : 'max-h-0 opacity-0 mb-0'
+                }`}>
+                  <div className="p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">📢</span>
                       <div>
                         <h3 className="font-semibold text-blue-800 dark:text-blue-400 mb-1">공지사항</h3>
                         <p className="text-blue-700 dark:text-blue-300 text-sm whitespace-pre-wrap">
-                          {announcement.content}
+                          {announcement?.content || ''}
                         </p>
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {/* Current Status */}
                 <div className="text-center mb-6">

@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 // Get announcement
 export async function GET() {
   try {
@@ -10,7 +12,14 @@ export async function GET() {
       where: { id: 'default' },
     })
 
-    return NextResponse.json(announcement || { content: null, isActive: false })
+    return NextResponse.json(
+      announcement || { content: null, isActive: false },
+      {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      }
+    )
   } catch (error) {
     console.error('Get announcement error:', error)
     return NextResponse.json(
