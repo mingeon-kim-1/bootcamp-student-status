@@ -265,13 +265,13 @@ export default function StudentDashboardPage({ params: { locale } }: { params: {
                   <div
                     className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ${
                       isNeedHelp
-                        ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500/50'
+                        ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500/50 animate-pulse'
                         : 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-500/50'
                     }`}
                   >
                     <span
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        isNeedHelp ? 'bg-red-500 animate-pulse' : 'bg-green-500'
+                      className={`w-3 h-3 rounded-full ${
+                        isNeedHelp ? 'bg-red-500' : 'bg-green-500'
                       }`}
                     />
                     {isNeedHelp ? t('common.needHelp') : t('common.ready')}
@@ -297,7 +297,7 @@ export default function StudentDashboardPage({ params: { locale } }: { params: {
                     <button
                       onClick={() => updateStatus('need-help')}
                       disabled={updating}
-                      className="w-full py-4 bg-red-600 hover:bg-red-700 disabled:bg-red-400 dark:disabled:bg-red-800 text-white font-semibold rounded-xl transition-all text-lg animate-pulse hover:animate-none"
+                      className="w-full py-4 bg-red-600 hover:bg-red-700 disabled:bg-red-400 dark:disabled:bg-red-800 text-white font-semibold rounded-xl transition-all text-lg"
                     >
                       {updating ? t('common.loading') : t('student.requestHelp')}
                     </button>
