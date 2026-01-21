@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String @id @default(uuid())
+  username     String @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model BootcampConfig {
+  id              String  @id @default("default")
+  seatsPerRow     Int     @default(10)
+  totalRows       Int     @default(5)
+  seatDirection   String  @default("bottom-right-horizontal")
+  displayTitle    String  @default("Bootcamp Status")
+  useCustomLayout Boolean @default(false)
+  corridorAfterRows String @default("[]") // JSON array of row indices that have corridors after them
+  corridorAfterCols String @default("[]") // JSON array of column indices that have corridors after them
+  updatedAt       DateTime @updatedAt
+}
+
+model Branding {
+  id               String  @id @default("default")
+  loginImagePath   String?
+  loginText        String?
+  displayImagePath String?
+  displayText      String?
+  organizationName String?
+  updatedAt        DateTime @updatedAt
+}
+
+model SeatPosition {
+  id         String  @id @default(uuid())
+  seatNumber Int     @unique
+  gridRow    Int
+  gridCol    Int
+  label      String?
+}
+
+model Student {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  seatNumber   Int      @unique
+  passwordHash String
+  status       String   @default("offline") // offline, online, need-help
+  lastActive   DateTime?
+  isLocked     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
