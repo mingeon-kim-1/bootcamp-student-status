@@ -97,14 +97,23 @@ export default function DisplayPage() {
   }
 
   const getStatusCounts = () => {
-    if (!data) return { online: 0, needHelp: 0, absent: 0 }
+    if (!data) return { online: 0, needHelp: 0, absent: 0, total: 0 }
     
     const online = data.students.filter(s => s.status === 'online').length
     const needHelp = data.students.filter(s => s.status === 'need-help').length
-    const totalSeats = data.config.seatsPerRow * data.config.totalRows
+    
+    // Calculate total seats based on custom layout if enabled
+    let totalSeats: number
+    if (data.config.useCustomLayout) {
+      // Only count seats that have been manually assigned
+      totalSeats = data.seatPositions.length
+    } else {
+      totalSeats = data.config.seatsPerRow * data.config.totalRows
+    }
+    
     const absent = totalSeats - online - needHelp
     
-    return { online, needHelp, absent }
+    return { online, needHelp, absent, total: totalSeats }
   }
 
   const counts = getStatusCounts()
@@ -178,29 +187,40 @@ export default function DisplayPage() {
         const student = seatNumber ? studentMap.get(seatNumber) : null
         const status = student?.status || 'offline'
 
-        cells.push(
-          <div
-            key={`${displayRow}-${col}`}
-            className={`w-14 h-14 md:w-16 md:h-16 rounded-lg border-2 flex flex-col items-center justify-center transition-all duration-500 ease-in-out transform hover:scale-105 ${
-              seatNumber 
-                ? getStatusColor(status) 
-                : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/30 text-gray-400 dark:text-slate-600'
-            } ${isFullscreen ? 'w-24 h-24' : ''} ${status === 'need-help' ? 'scale-105 shadow-lg shadow-red-500/50 dark:shadow-red-500/30' : ''}`}
-          >
-            {seatNumber && (
-              <>
-                <span className={`font-bold ${isFullscreen ? 'text-xl' : 'text-sm'}`}>
-                  {seatNumber}
-                </span>
-                {student?.name && (
-                  <span className={`truncate max-w-full px-1 ${isFullscreen ? 'text-xs' : 'text-[10px]'} opacity-80`}>
-                    {student.name}
+        // In custom layout mode, skip cells without assigned seats
+        if (data.config.useCustomLayout && !seatNumber) {
+          // Add an invisible placeholder to maintain grid alignment
+          cells.push(
+            <div
+              key={`${displayRow}-${col}`}
+              className={`w-14 h-14 md:w-16 md:h-16 ${isFullscreen ? 'w-24 h-24' : ''}`}
+            />
+          )
+        } else {
+          cells.push(
+            <div
+              key={`${displayRow}-${col}`}
+              className={`w-14 h-14 md:w-16 md:h-16 rounded-lg border-2 flex flex-col items-center justify-center transition-all duration-500 ease-in-out transform hover:scale-105 ${
+                seatNumber 
+                  ? getStatusColor(status) 
+                  : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/30 text-gray-400 dark:text-slate-600'
+              } ${isFullscreen ? 'w-24 h-24' : ''} ${status === 'need-help' ? 'scale-105 shadow-lg shadow-red-500/50 dark:shadow-red-500/30' : ''}`}
+            >
+              {seatNumber && (
+                <>
+                  <span className={`font-bold ${isFullscreen ? 'text-xl' : 'text-sm'}`}>
+                    {seatNumber}
                   </span>
-                )}
-              </>
-            )}
-          </div>
-        )
+                  {student?.name && (
+                    <span className={`truncate max-w-full px-1 ${isFullscreen ? 'text-xs' : 'text-[10px]'} opacity-80`}>
+                      {student.name}
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+          )
+        }
 
         // Add column corridor if needed (single line)
         if (hasColCorridorAfter(col) && col < data.config.seatsPerRow - 1) {
