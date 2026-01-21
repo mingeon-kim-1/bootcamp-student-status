@@ -37,13 +37,15 @@ export default async function HomePage({ params: { locale } }: { params: { local
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
           <Link
             href={`/${locale}/admin/login`}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-8 rounded-xl text-center transition-all hover:scale-105 shadow-lg shadow-indigo-500/30"
+            className="flex-1 font-semibold py-4 px-8 rounded-xl text-center transition-all hover:scale-105 shadow-lg text-white"
+            style={{ backgroundColor: '#FF6B00', boxShadow: '0 10px 15px -3px rgba(255, 107, 0, 0.3)' }}
           >
             {t('landing.adminLogin')}
           </Link>
           <Link
             href={`/${locale}/student/login`}
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 px-8 rounded-xl text-center transition-all hover:scale-105 shadow-lg shadow-emerald-500/30"
+            className="flex-1 bg-white dark:bg-slate-800 font-semibold py-4 px-8 rounded-xl text-center transition-all hover:scale-105 shadow-lg border-2"
+            style={{ borderColor: '#FF6B00', color: '#FF6B00' }}
           >
             {t('landing.studentLogin')}
           </Link>
@@ -51,7 +53,8 @@ export default async function HomePage({ params: { locale } }: { params: { local
 
         <Link
           href={`/${locale}/student/signup`}
-          className="mt-6 text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-white transition-colors underline underline-offset-4"
+          className="mt-6 hover:opacity-80 transition-colors underline underline-offset-4"
+          style={{ color: '#FF6B00' }}
         >
           {t('landing.studentSignup')}
         </Link>
