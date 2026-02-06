@@ -254,7 +254,6 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
               const corridorWidth = 6
               const toggleBtnWidth = 32 // w-8 = 32px
               const toggleBtnHeight = 32 // h-8 for column toggles
-              const rowToggleHeight = cellSize // Match cell height
 
               // Calculate column position accounting for corridors
               const getColPosition = (col: number) => {
