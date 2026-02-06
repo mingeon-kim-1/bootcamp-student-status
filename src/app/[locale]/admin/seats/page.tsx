@@ -313,23 +313,24 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
                     {/* Column corridor toggle buttons */}
                     <div className="relative mb-2" style={{ width: totalWidth, height: toggleBtnHeight }}>
                       {Array.from({ length: config.seatsPerRow - 1 }).map((_, colIndex) => {
-                        // Position button at the gap between columns (where corridor would appear)
-                        const xPos = getColPosition(colIndex) + cellSize + gap / 2
+                        // Position button centered in the gap (including corridor space if exists)
+                        const hasCorridor = hasColCorridorAfter(colIndex)
+                        const xPos = getColPosition(colIndex) + cellSize + gap + (hasCorridor ? corridorWidth / 2 : 0)
                         return (
                           <button
                             key={`col-toggle-${colIndex}`}
                             onClick={() => toggleColCorridor(colIndex)}
                             className={`absolute h-8 w-4 rounded flex items-center justify-center text-xs transition-colors ${
-                              hasColCorridorAfter(colIndex)
+                              hasCorridor
                                 ? 'bg-amber-500/30 text-amber-600 dark:text-amber-400 border-2 border-amber-500'
                                 : 'bg-gray-200 dark:bg-slate-700/30 text-gray-400 dark:text-slate-500 border-2 border-gray-300 dark:border-slate-600 hover:border-amber-500 hover:text-amber-500'
                             }`}
                             style={{
                               left: xPos - 8, // Center the 16px button on the gap
                             }}
-                            title={hasColCorridorAfter(colIndex) ? 'Remove vertical corridor' : 'Add vertical corridor'}
+                            title={hasCorridor ? 'Remove vertical corridor' : 'Add vertical corridor'}
                           >
-                            {hasColCorridorAfter(colIndex) ? '┃' : '+'}
+                            {hasCorridor ? '┃' : '+'}
                           </button>
                         )
                       })}
@@ -340,7 +341,8 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
                       {/* Continuous vertical corridors */}
                       {config.corridorAfterCols.map(col => {
                         if (col >= config.seatsPerRow - 1) return null
-                        const xPos = getColPosition(col) + cellSize + gap / 2
+                        // Center corridor in the gap: cellEnd + gap + corridorWidth/2
+                        const xPos = getColPosition(col) + cellSize + gap + corridorWidth / 2
                         return (
                           <div
                             key={`v-corridor-${col}`}
@@ -358,7 +360,7 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
                       {/* Continuous horizontal corridors */}
                       {config.corridorAfterRows.map(row => {
                         if (row <= 0) return null
-                        const yPos = getRowPosition(row) - gap / 2
+                        const yPos = getRowPosition(row) - gap - corridorWidth / 2
                         return (
                           <div
                             key={`h-corridor-${row}`}
