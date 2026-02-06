@@ -247,60 +247,153 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
           <div className="overflow-auto pb-4">
             <div className="text-gray-500 dark:text-slate-400 text-sm mb-2 text-center">↑ Front of Room ↑</div>
             
-            {/* Column corridor toggle row */}
-            <div className="flex gap-2 mb-2 ml-10">
-              {Array.from({ length: config.seatsPerRow }).map((_, colIndex) => (
-                <div key={`col-toggle-${colIndex}`} className="flex">
-                  <div className="w-16" /> {/* Spacer for seat */}
-                  {colIndex < config.seatsPerRow - 1 && (
-                    <button
-                      onClick={() => toggleColCorridor(colIndex)}
-                      className={`w-4 h-8 rounded flex items-center justify-center text-xs transition-colors mx-1 ${
-                        hasColCorridorAfter(colIndex)
-                          ? 'bg-amber-500/30 text-amber-600 dark:text-amber-400 border-2 border-amber-500'
-                          : 'bg-gray-200 dark:bg-slate-700/30 text-gray-400 dark:text-slate-500 border-2 border-gray-300 dark:border-slate-600 hover:border-amber-500 hover:text-amber-500'
-                      }`}
-                      title={hasColCorridorAfter(colIndex) ? 'Remove vertical corridor' : 'Add vertical corridor'}
-                    >
-                      {hasColCorridorAfter(colIndex) ? '┃' : '+'}
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            {(() => {
+              // Grid dimensions
+              const cellSize = 64 // w-16 = 64px
+              const gap = 8 // gap-2 = 8px
+              const corridorWidth = 6
+              const toggleBtnWidth = 32 // w-8 = 32px
+              const toggleBtnHeight = 32 // h-8 for column toggles
+              const rowToggleHeight = cellSize // Match cell height
 
-            {/* Seat Grid */}
-            <div className="flex flex-col gap-2 min-w-fit">
-              {Array.from({ length: config.totalRows }).map((_, rowIndex) => {
-                const row = config.totalRows - 1 - rowIndex
-                return (
-                  <div key={`row-group-${row}`}>
-                    <div className="flex gap-2 items-center">
-                      {/* Row corridor toggle */}
-                      <button
-                        onClick={() => toggleRowCorridor(row)}
-                        className={`w-8 h-16 rounded flex items-center justify-center text-xs transition-colors ${
-                          hasRowCorridorAfter(row)
-                            ? 'bg-amber-500/30 text-amber-600 dark:text-amber-400 border-2 border-amber-500'
-                            : 'bg-gray-200 dark:bg-slate-700/30 text-gray-400 dark:text-slate-500 border-2 border-gray-300 dark:border-slate-600 hover:border-amber-500 hover:text-amber-500'
-                        }`}
-                        title={hasRowCorridorAfter(row) ? 'Remove horizontal corridor' : 'Add horizontal corridor'}
-                      >
-                        {hasRowCorridorAfter(row) ? '━' : '+'}
-                      </button>
+              // Calculate column position accounting for corridors
+              const getColPosition = (col: number) => {
+                let pos = col * (cellSize + gap)
+                for (let c = 0; c < col; c++) {
+                  if (hasColCorridorAfter(c)) {
+                    pos += corridorWidth + gap
+                  }
+                }
+                return pos
+              }
 
-                      {/* Seat cells with column corridors */}
-                      {Array.from({ length: config.seatsPerRow }).map((_, colIndex) => {
-                        const seat = getSeatAtPosition(row, colIndex)
+              // Calculate row position accounting for corridors (rows are reversed for display)
+              const getRowPosition = (displayRow: number) => {
+                let pos = (config.totalRows - 1 - displayRow) * (cellSize + gap)
+                for (let r = config.totalRows - 1; r > displayRow; r--) {
+                  if (hasRowCorridorAfter(r)) {
+                    pos += corridorWidth + gap
+                  }
+                }
+                return pos
+              }
+
+              // Total grid dimensions
+              const totalWidth = getColPosition(config.seatsPerRow - 1) + cellSize
+              const totalHeight = getRowPosition(0) + cellSize
+
+              return (
+                <div className="flex">
+                  {/* Row corridor toggle buttons */}
+                  <div className="relative mr-2" style={{ width: toggleBtnWidth, height: totalHeight, marginTop: toggleBtnHeight + gap }}>
+                    {Array.from({ length: config.totalRows }).map((_, rowIndex) => {
+                      const row = config.totalRows - 1 - rowIndex
+                      return (
+                        <button
+                          key={`row-toggle-${row}`}
+                          onClick={() => toggleRowCorridor(row)}
+                          className={`absolute w-8 rounded flex items-center justify-center text-xs transition-colors ${
+                            hasRowCorridorAfter(row)
+                              ? 'bg-amber-500/30 text-amber-600 dark:text-amber-400 border-2 border-amber-500'
+                              : 'bg-gray-200 dark:bg-slate-700/30 text-gray-400 dark:text-slate-500 border-2 border-gray-300 dark:border-slate-600 hover:border-amber-500 hover:text-amber-500'
+                          }`}
+                          style={{
+                            height: cellSize,
+                            top: getRowPosition(row),
+                          }}
+                          title={hasRowCorridorAfter(row) ? 'Remove horizontal corridor' : 'Add horizontal corridor'}
+                        >
+                          {hasRowCorridorAfter(row) ? '━' : '+'}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Main grid area */}
+                  <div className="flex flex-col">
+                    {/* Column corridor toggle buttons */}
+                    <div className="relative mb-2" style={{ width: totalWidth, height: toggleBtnHeight }}>
+                      {Array.from({ length: config.seatsPerRow - 1 }).map((_, colIndex) => {
+                        // Position button at the gap between columns (where corridor would appear)
+                        const xPos = getColPosition(colIndex) + cellSize + gap / 2
                         return (
-                          <div key={`cell-${row}-${colIndex}`} className="flex items-center">
+                          <button
+                            key={`col-toggle-${colIndex}`}
+                            onClick={() => toggleColCorridor(colIndex)}
+                            className={`absolute h-8 w-4 rounded flex items-center justify-center text-xs transition-colors ${
+                              hasColCorridorAfter(colIndex)
+                                ? 'bg-amber-500/30 text-amber-600 dark:text-amber-400 border-2 border-amber-500'
+                                : 'bg-gray-200 dark:bg-slate-700/30 text-gray-400 dark:text-slate-500 border-2 border-gray-300 dark:border-slate-600 hover:border-amber-500 hover:text-amber-500'
+                            }`}
+                            style={{
+                              left: xPos - 8, // Center the 16px button on the gap
+                            }}
+                            title={hasColCorridorAfter(colIndex) ? 'Remove vertical corridor' : 'Add vertical corridor'}
+                          >
+                            {hasColCorridorAfter(colIndex) ? '┃' : '+'}
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Seat Grid with absolute positioning */}
+                    <div className="relative" style={{ width: totalWidth, height: totalHeight }}>
+                      {/* Continuous vertical corridors */}
+                      {config.corridorAfterCols.map(col => {
+                        if (col >= config.seatsPerRow - 1) return null
+                        const xPos = getColPosition(col) + cellSize + gap / 2
+                        return (
+                          <div
+                            key={`v-corridor-${col}`}
+                            className="absolute bg-amber-500 rounded-full"
+                            style={{
+                              width: corridorWidth,
+                              height: totalHeight,
+                              left: xPos - corridorWidth / 2,
+                              top: 0,
+                            }}
+                          />
+                        )
+                      })}
+
+                      {/* Continuous horizontal corridors */}
+                      {config.corridorAfterRows.map(row => {
+                        if (row <= 0) return null
+                        const yPos = getRowPosition(row) - gap / 2
+                        return (
+                          <div
+                            key={`h-corridor-${row}`}
+                            className="absolute bg-amber-500 rounded-full"
+                            style={{
+                              width: totalWidth,
+                              height: corridorWidth,
+                              left: 0,
+                              top: yPos - corridorWidth / 2,
+                            }}
+                          />
+                        )
+                      })}
+
+                      {/* Seat cells */}
+                      {Array.from({ length: config.totalRows }).map((_, rowIndex) => {
+                        const row = config.totalRows - 1 - rowIndex
+                        return Array.from({ length: config.seatsPerRow }).map((_, colIndex) => {
+                          const seat = getSeatAtPosition(row, colIndex)
+                          return (
                             <button
+                              key={`cell-${row}-${colIndex}`}
                               onClick={() => handleCellClick(row, colIndex)}
-                              className={`w-16 h-16 rounded-lg border-2 flex flex-col items-center justify-center font-bold transition-all hover:scale-105 ${
+                              className={`absolute rounded-lg border-2 flex flex-col items-center justify-center font-bold transition-all hover:scale-105 ${
                                 seat
                                   ? 'border-emerald-500 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-500/30'
                                   : 'border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-700/50 text-gray-400 dark:text-slate-500 hover:border-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:text-indigo-600 dark:hover:text-indigo-400'
                               }`}
+                              style={{
+                                width: cellSize,
+                                height: cellSize,
+                                left: getColPosition(colIndex),
+                                top: getRowPosition(row),
+                              }}
                             >
                               {seat ? (
                                 <>
@@ -314,30 +407,31 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
                                 </>
                               )}
                             </button>
-                            {/* Column corridor indicator */}
-                            {hasColCorridorAfter(colIndex) && colIndex < config.seatsPerRow - 1 && (
-                              <div className="w-[6px] h-16 bg-amber-500 rounded-full mx-2" />
-                            )}
-                          </div>
+                          )
+                        })
+                      })}
+
+                      {/* Row labels */}
+                      {Array.from({ length: config.totalRows }).map((_, rowIndex) => {
+                        const row = config.totalRows - 1 - rowIndex
+                        return (
+                          <span
+                            key={`label-${row}`}
+                            className="absolute text-gray-500 dark:text-slate-500 text-sm whitespace-nowrap"
+                            style={{
+                              left: totalWidth + 12,
+                              top: getRowPosition(row) + cellSize / 2 - 10,
+                            }}
+                          >
+                            Row {row + 1}
+                          </span>
                         )
                       })}
-                      <span className="text-gray-500 dark:text-slate-500 text-sm ml-2">Row {row + 1}</span>
                     </div>
-
-                    {/* Row corridor */}
-                    {hasRowCorridorAfter(row) && row > 0 && (
-                      <div className="flex gap-2 items-center my-2">
-                        <div className="w-8" />
-                        <div 
-                          className="h-[6px] bg-amber-500 rounded-full"
-                          style={{ width: `${config.seatsPerRow * 72 + (config.seatsPerRow - 1) * 8 + config.corridorAfterCols.filter(c => c < config.seatsPerRow - 1).length * 18}px` }}
-                        />
-                      </div>
-                    )}
                   </div>
-                )
-              })}
-            </div>
+                </div>
+              )
+            })()}
             <div className="text-gray-500 dark:text-slate-400 text-sm mt-4 text-center">↓ Back of Room ↓</div>
           </div>
 
