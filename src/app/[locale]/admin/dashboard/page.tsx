@@ -104,19 +104,27 @@ export default function AdminDashboardPage({ params: { locale } }: { params: { l
     }
   }
 
-  const saveAnnouncement = async () => {
+  const saveAnnouncement = async (announcementData?: Announcement) => {
+    const dataToSave = announcementData || announcement
     setSavingAnnouncement(true)
     try {
       await fetch('/api/admin/announcement', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(announcement),
+        body: JSON.stringify(dataToSave),
       })
     } catch (error) {
       console.error('Error saving announcement:', error)
     } finally {
       setSavingAnnouncement(false)
     }
+  }
+
+  const handleAnnouncementToggle = (isActive: boolean) => {
+    const newAnnouncement = { ...announcement, isActive }
+    setAnnouncement(newAnnouncement)
+    // Auto-save when toggling (both ON and OFF)
+    saveAnnouncement(newAnnouncement)
   }
 
   const handleConfigChange = (field: keyof Config, value: string | number | boolean) => {
@@ -389,22 +397,23 @@ export default function AdminDashboardPage({ params: { locale } }: { params: { l
                   <input
                     type="checkbox"
                     checked={announcement.isActive}
-                    onChange={(e) => setAnnouncement(prev => ({ ...prev, isActive: e.target.checked }))}
+                    onChange={(e) => handleAnnouncementToggle(e.target.checked)}
                     className="sr-only"
+                    disabled={savingAnnouncement}
                   />
-                  <div className={`w-12 h-6 rounded-full transition-colors ${announcement.isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-slate-600'}`}>
+                  <div className={`w-12 h-6 rounded-full transition-colors ${announcement.isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-slate-600'} ${savingAnnouncement ? 'opacity-50' : ''}`}>
                     <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform absolute top-0.5 ${announcement.isActive ? 'translate-x-6' : 'translate-x-0.5'}`} />
                   </div>
                 </div>
                 <span className="text-gray-700 dark:text-slate-300 font-medium">
-                  {announcement.isActive ? '공지사항 표시 중' : '공지사항 숨김'}
+                  {savingAnnouncement ? t('common.loading') : (announcement.isActive ? '공지사항 표시 중' : '공지사항 숨김')}
                 </span>
               </label>
             </div>
           </div>
 
           <button
-            onClick={saveAnnouncement}
+            onClick={() => saveAnnouncement()}
             disabled={savingAnnouncement}
             className="mt-6 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 dark:disabled:bg-indigo-800 text-white rounded-lg transition-colors"
           >
