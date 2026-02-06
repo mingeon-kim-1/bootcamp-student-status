@@ -283,26 +283,30 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
 
               return (
                 <div className="flex">
-                  {/* Row corridor toggle buttons */}
+                  {/* Row corridor toggle buttons - positioned at bottom edge of each row (except last row) */}
                   <div className="relative mr-2" style={{ width: toggleBtnWidth, height: totalHeight, marginTop: toggleBtnHeight + gap }}>
                     {Array.from({ length: config.totalRows }).map((_, rowIndex) => {
                       const row = config.totalRows - 1 - rowIndex
+                      // Skip row 0 (bottom row) - can't have corridor below it
+                      if (row === 0) return null
+                      const hasCorridor = hasRowCorridorAfter(row)
+                      // Position button at the gap below this row (centered in gap including corridor space)
+                      const yPos = getRowPosition(row) + cellSize + gap + (hasCorridor ? corridorWidth / 2 : 0)
                       return (
                         <button
                           key={`row-toggle-${row}`}
                           onClick={() => toggleRowCorridor(row)}
-                          className={`absolute w-8 rounded flex items-center justify-center text-xs transition-colors ${
-                            hasRowCorridorAfter(row)
+                          className={`absolute w-8 h-4 rounded flex items-center justify-center text-xs transition-colors ${
+                            hasCorridor
                               ? 'bg-amber-500/30 text-amber-600 dark:text-amber-400 border-2 border-amber-500'
                               : 'bg-gray-200 dark:bg-slate-700/30 text-gray-400 dark:text-slate-500 border-2 border-gray-300 dark:border-slate-600 hover:border-amber-500 hover:text-amber-500'
                           }`}
                           style={{
-                            height: cellSize,
-                            top: getRowPosition(row),
+                            top: yPos - 8, // Center the 16px button on the gap
                           }}
-                          title={hasRowCorridorAfter(row) ? 'Remove horizontal corridor' : 'Add horizontal corridor'}
+                          title={hasCorridor ? 'Remove horizontal corridor' : 'Add horizontal corridor'}
                         >
-                          {hasRowCorridorAfter(row) ? '━' : '+'}
+                          {hasCorridor ? '━' : '+'}
                         </button>
                       )
                     })}
@@ -360,7 +364,8 @@ export default function AdminSeatsPage({ params: { locale } }: { params: { local
                       {/* Continuous horizontal corridors */}
                       {config.corridorAfterRows.map(row => {
                         if (row <= 0) return null
-                        const yPos = getRowPosition(row) - gap - corridorWidth / 2
+                        // Center corridor in the gap below this row: rowBottom + gap + corridorWidth/2
+                        const yPos = getRowPosition(row) + cellSize + gap + corridorWidth / 2
                         return (
                           <div
                             key={`h-corridor-${row}`}
